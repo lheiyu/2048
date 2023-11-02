@@ -1,6 +1,7 @@
 import pygame
 import math
 import random
+import copy
 
 pygame.init()
 pygame.font.init()
@@ -48,10 +49,97 @@ def init_game():
         for x, col in enumerate(row):
             if col == 0:
                 free_pos.append([x, y])
-    print(free_pos)
     random_block = free_pos[random.randint(0, len(free_pos)-1)]
     random_num = new_numbers[random.randint(0, len(new_numbers)-1)]
     blocks[random_block[1]][random_block[0]] = random_num
+
+def up(blocks):
+    for y, row in enumerate(blocks):
+        for x, col in enumerate(row):
+            if 4 > y > 0:
+                if col != 0:
+                    current_y = y
+                    while blocks[current_y-1][x] == 0 and current_y > 0:
+                        blocks[current_y-1][x] = blocks[current_y][x]
+                        blocks[current_y][x] = 0
+                        current_y -= 1                    
+                    
+def up_merge(blocks):
+    for y, row in enumerate(blocks):
+        for x, col in enumerate(row):
+            if y < len(blocks) - 1 and col == blocks[y+1][x] and col!= 0:
+                    blocks[y][x] *= 2
+                    blocks[y+1][x] = 0
+                    up(blocks)
+                               
+
+def left(blocks):
+    for y, row in enumerate(blocks):
+        for x, col in enumerate(row):
+            if 4 > x > 0:
+                if col != 0:
+                    current_x = x
+                    while blocks[y][current_x-1] == 0 and current_x > 0:
+                        blocks[y][current_x-1] = blocks[y][current_x]
+                        blocks[y][current_x] = 0
+                        current_x -= 1
+                        
+def left_merge(blocks):
+    for y, row in enumerate(blocks):
+        for x, col in enumerate(row):
+            if x < len(row) - 1 and col == blocks[y][x+1] and col != 0:
+                    blocks[y][x] *= 2
+                    blocks[y][x+1] = 0
+                    left(blocks)
+                        
+
+def down(blocks):
+    for y in range(len(blocks)-1, -1, -1):
+        row = blocks[y]
+        for x in range(len(row)-1, -1, -1):
+            col = blocks[y][x]
+            if 3 > y >= 0:
+                if col != 0:
+                    current_y = y
+                    while current_y < 3 and blocks[current_y+1][x] == 0:
+                        blocks[current_y+1][x] = blocks[current_y][x]
+                        blocks[current_y][x] = 0
+                        current_y = current_y + 1
+                        
+def down_merge(blocks):
+    for y in range(len(blocks)-1, 0, -1):
+        row = blocks[y]
+        for x in range(len(row)-1, -1, -1):
+            col = blocks[y][x]
+            if y > 0 and col == blocks[y-1][x] and col != 0:
+                blocks[y][x] *= 2
+                blocks[y-1][x] = 0
+                down(blocks)
+                
+                        
+def right(blocks):
+    for y in range(len(blocks)-1, -1, -1):
+        row = blocks[y]
+        for x in range(len(row)-1, -1, -1):
+            col = blocks[y][x]
+            if 3 > x >= 0:  
+                if col != 0:
+                    current_x = x
+                    while current_x < 3 and blocks[y][current_x+1] == 0:
+                        blocks[y][current_x+1] = blocks[y][current_x]
+                        blocks[y][current_x] = 0
+                        current_x = current_x + 1
+                        
+def right_merge(blocks):
+    for y in range(len(blocks)-1, -1, -1):
+        row = blocks[y]
+        for x in range(len(row)-1, 0, -1):
+            col = blocks[y][x]
+            if x > 0 and col == blocks[y][x-1] and col != 0:
+                blocks[y][x] *= 2
+                blocks[y][x-1] = 0
+                right(blocks)
+
 
 
 def run():
@@ -59,13 +147,38 @@ def run():
     run = True
     init_game()
     
-    
     while run:
         clock.tick(FPS)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
-        
+            
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_UP:
+                    init_blocks = tuple(blocks)
+                    up(blocks)
+                    up_merge(blocks)
+                    if init_blocks != blocks:
+                        init_game()
+                if event.key == pygame.K_DOWN:
+                    init_blocks = tuple(blocks)
+                    down(blocks)
+                    down_merge(blocks)
+                    if init_blocks != blocks:
+                        init_game()
+                if event.key == pygame.K_LEFT:
+                    init_blocks = tuple(blocks)
+                    left(blocks)
+                    left_merge(blocks)
+                    if init_blocks != blocks:
+                        init_game()
+                if event.key == pygame.K_RIGHT:
+                    init_blocks = tuple(blocks)
+                    right(blocks)
+                    right_merge(blocks)
+                    if init_blocks != blocks:
+                        init_game()
+                
         draw_background()
         draw_blocks()
         pygame.display.flip()
