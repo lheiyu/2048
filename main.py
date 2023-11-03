@@ -1,20 +1,20 @@
 import pygame
 import math
 import random
-import copy
 
 pygame.init()
 pygame.font.init()
 
 FPS = 60
-WIDTH, HEIGHT = 900, 900
-BORDER_WIDTH = 20
-BLOCK_WIDTH, BLOCK_HEIGHT = 200, 200
+WIDTH, HEIGHT = 650, 650
+BORDER_WIDTH = 10
+BLOCK_WIDTH, BLOCK_HEIGHT = 150, 150
 
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 BG_COLOUR = (205, 197, 154)
 BORDER_COLOUR = (105, 99, 63)
+BLOCK_COLOURS = ["#fcefe6", "#f2e8cb" , "#f5b682", "#f29446", "#ff775c", "#e64c2e", "#ede291", "#fce130", "#ffdb4a", "#f0b922", "#fad74d"]              
 
 blocks = [[0, 0, 0, 0],
           [0, 0, 0, 0], 
@@ -26,8 +26,8 @@ pygame.display.set_caption("2048")
 
 def draw_background():    
     WIN.fill((BG_COLOUR))
-    for y in range(BORDER_WIDTH//2-1, HEIGHT+20, 200+BORDER_WIDTH):
-        for x in range(BORDER_WIDTH//2-1, WIDTH+20, 200+BORDER_WIDTH):
+    for y in range(BORDER_WIDTH//2-1, HEIGHT+20, BLOCK_WIDTH+BORDER_WIDTH):
+        for x in range(BORDER_WIDTH//2-1, WIDTH+20, BLOCK_HEIGHT+BORDER_WIDTH):
             pygame.draw.line(WIN, BORDER_COLOUR, (0, y), (WIDTH, y), 20)
             pygame.draw.line(WIN, BORDER_COLOUR, (x, 0), (x, HEIGHT), 20)
 
@@ -35,7 +35,8 @@ def draw_blocks():
     for y, row in enumerate(blocks):
         for x, block in enumerate(row):
             if block != 0:
-                pygame.draw.rect(WIN, (230, 220-math.log(block, 2)*10, 155), pygame.Rect(x*BLOCK_HEIGHT+(x+1)*BORDER_WIDTH, y*BLOCK_WIDTH+(y+1)*BORDER_WIDTH, BLOCK_WIDTH, BLOCK_HEIGHT))
+                pygame.draw.rect(WIN, BLOCK_COLOURS[int(math.log(block, 2))], 
+                                 pygame.Rect(x*BLOCK_HEIGHT+(x+1)*BORDER_WIDTH, y*BLOCK_WIDTH+(y+1)*BORDER_WIDTH, BLOCK_WIDTH, BLOCK_HEIGHT))
                 num = pygame.font.SysFont('times new roman', 50, True).render(str(block), True, BLACK)
                 preset = BORDER_WIDTH + BLOCK_WIDTH//2
                 num_width = num.get_width()
@@ -52,6 +53,7 @@ def init_game():
     random_block = free_pos[random.randint(0, len(free_pos)-1)]
     random_num = new_numbers[random.randint(0, len(new_numbers)-1)]
     blocks[random_block[1]][random_block[0]] = random_num
+
 
 def up(blocks):
     for y, row in enumerate(blocks):
@@ -143,46 +145,39 @@ def right_merge(blocks):
 
 
 def run():
+    #run once only
     clock = pygame.time.Clock()
     run = True
     init_game()
     
+    #loops
     while run:
         clock.tick(FPS)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
-            
+                
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_UP:
-                    init_blocks = tuple(blocks)
                     up(blocks)
                     up_merge(blocks)
-                    if init_blocks != blocks:
-                        init_game()
+                    init_game()
                 if event.key == pygame.K_DOWN:
-                    init_blocks = tuple(blocks)
                     down(blocks)
                     down_merge(blocks)
-                    if init_blocks != blocks:
-                        init_game()
+                    init_game()
                 if event.key == pygame.K_LEFT:
-                    init_blocks = tuple(blocks)
                     left(blocks)
                     left_merge(blocks)
-                    if init_blocks != blocks:
-                        init_game()
+                    init_game()
                 if event.key == pygame.K_RIGHT:
-                    init_blocks = tuple(blocks)
                     right(blocks)
                     right_merge(blocks)
-                    if init_blocks != blocks:
-                        init_game()
+                    init_game()
                 
         draw_background()
         draw_blocks()
         pygame.display.flip()
-    
 
 if __name__ == "__main__":
     run()
